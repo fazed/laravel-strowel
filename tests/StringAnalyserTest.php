@@ -8,7 +8,8 @@ class StringAnalyserTest extends TestCase
 {
     const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
     const STRING_WITHOUT_BLOCKS = 'Shokugeki no Souma S3 - 11.mkv';
-    const STRING_WIHT_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    const STRING_WITH_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    const STRING_WITH_INDISTINCT_BLOCKS = '[FFF][FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
 
     /** @test */
     public function it_can_analyse_string_wo_blocks()
@@ -44,15 +45,15 @@ class StringAnalyserTest extends TestCase
             ->setSourceString(static::STRING_WITH_BLOCKS)
             ->getCleanString();
 
-        $this->assertSame('Shokugeki no Souma S3 - 11.mkv', $cleanString);
+        $this->assertSame(static::STRING_WITHOUT_BLOCKS, $cleanString);
     }
 
     /** @test */
-    public function it_can_fail_on_unbalanced_blocks()
+    public function it_can_ignore_unbalanced_blocks()
     {
         /** @var StringAnalyserContract $analyser */
         $analyser = app(StringAnalyserContract::class)
-            ->setSourceString(static::STRING_WIHT_UNBALANCED_BLOCKS);
+            ->setSourceString(static::STRING_WITH_UNBALANCED_BLOCKS);
 
         $this->assertCount(0, $analyser->getBlocks());
 
@@ -63,6 +64,24 @@ class StringAnalyserTest extends TestCase
             }, $analyser->getBlocks())
         );
 
-        $this->assertSame(static::STRING_WIHT_UNBALANCED_BLOCKS, $analyser->getCleanString());
+        $this->assertSame(static::STRING_WITH_UNBALANCED_BLOCKS, $analyser->getCleanString());
+    }
+
+    public function it_can_filter_distinct_blocks()
+    {
+        /** @var StringAnalyserContract $analyser */
+        $analyser = app(StringAnalyserContract::class)
+            ->setSourceString(static::STRING_WITH_UNBALANCED_BLOCKS);
+
+        $this->assertCount(3, $analyser->getDistinctBlocks());
+
+        $this->assertArraySubset(
+            ['FFF', '1080p', 'BE0D72E6'],
+            array_map(function ($block) {
+                return $block->getData();
+            }, $analyser->getBlocks())
+        );
+
+        $this->assertSame(static::STRING_WITHOUT_BLOCKS, $analyser->getCleanString());
     }
 }

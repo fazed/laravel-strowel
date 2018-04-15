@@ -87,6 +87,14 @@ class StringAnalyser implements StringAnalyserContract
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDistinctBlocks()
+    {
+        return array_unique($this->getBlocks());
+    }
+
+    /**
      * Analyse string and extract block data.
      *
      * @return BlockContract[]
@@ -104,7 +112,7 @@ class StringAnalyser implements StringAnalyserContract
             }
         }
 
-        return $this->blockCache = ($blockStack ?? []);
+        return $this->blockCache = $blockStack ?? [];
     }
 
     /**
@@ -170,7 +178,7 @@ class StringAnalyser implements StringAnalyserContract
     }
 
     /**
-     * Strip the block from the source string.
+     * Strip the blocks from the source string.
      *
      * @return string
      * @throws BlockDefinitionExtractionError
