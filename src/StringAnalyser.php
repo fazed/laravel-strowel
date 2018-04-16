@@ -68,7 +68,7 @@ class StringAnalyser implements StringAnalyserContract
     public function getCleanString($fresh = false)
     {
         if ($fresh || ( ! $fresh && null === $this->cleanStringCache)) {
-            return $this->stripBlocksFromSource();
+            return $this->deblockSourceString();
         }
 
         return $this->cleanStringCache;
@@ -183,7 +183,7 @@ class StringAnalyser implements StringAnalyserContract
      * @return string
      * @throws BlockDefinitionExtractionError
      */
-    protected function stripBlocksFromSource()
+    protected function deblockSourceString()
     {
         $string = $this->sourceString;
         $blocks = $this->getBlocks();
