@@ -2,8 +2,8 @@
 
 namespace Fazed\TorrentTitleParser;
 
-use Fazed\TorrentTitleParser\Models\Block;
 use Fazed\TorrentTitleParser\Contracts\BlockContract;
+use Fazed\TorrentTitleParser\Contracts\BlockFactoryContract;
 use Fazed\TorrentTitleParser\Contracts\StringAnalyserContract;
 use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDefinition;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -25,6 +25,11 @@ class StringAnalyser implements StringAnalyserContract
     private $configRepository;
 
     /**
+     * @var BlockFactoryContract
+     */
+    private $blockFactory;
+
+    /**
      * @var null|BlockContract[]
      */
     private $blockCache;
@@ -38,10 +43,15 @@ class StringAnalyser implements StringAnalyserContract
      * StringAnalyser constructor.
      *
      * @param ConfigRepository $configRepository
+     * @param BlockFactoryContract $blockFactory
      */
-    public function __construct(ConfigRepository $configRepository)
+    public function __construct(
+        ConfigRepository $configRepository,
+        BlockFactoryContract $blockFactory
+    )
     {
         $this->configRepository = $configRepository;
+        $this->blockFactory = $blockFactory;
     }
 
     /**
@@ -173,7 +183,7 @@ class StringAnalyser implements StringAnalyserContract
         }
 
         return array_map(function ($set) use ($blockDefinition) {
-            return new Block($set[1], $blockDefinition);
+            return $this->blockFactory->make($set[1], $blockDefinition);
         }, $blockData);
     }
 
