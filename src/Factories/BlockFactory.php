@@ -12,6 +12,6 @@ class BlockFactory implements BlockFactoryContract
      */
     public function make($data, $definition)
     {
-        return app(BlockContract::class, ['data' => $data, 'definitinon' => $definition]);
+        return app(BlockContract::class, ['data' => $data, 'definition' => $definition]);
     }
 }

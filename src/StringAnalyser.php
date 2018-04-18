@@ -137,14 +137,14 @@ class StringAnalyser implements StringAnalyserContract
     protected function sourceContainsBlockDefinition($blockDefinition)
     {
         if (\strlen($blockDefinition) !== 2) {
-            throw new InvalidBlockDefinition('Definition must consist of 2 characters.');
+            throw new InvalidBlockDefinition($blockDefinition);
         }
 
         $blockStartDefinitionCount = substr_count($this->sourceString, $blockDefinition[0]);
         $blockCloseDefinitionCount = substr_count($this->sourceString, $blockDefinition[1]);
 
         if ($blockStartDefinitionCount !== $blockCloseDefinitionCount) {
-            throw new BlockDefinitionUnbalanced('Unbalanced definition found '. $blockDefinition .'.');
+            throw new BlockDefinitionUnbalanced($blockDefinition);
         }
 
         return $blockStartDefinitionCount + $blockCloseDefinitionCount >= 2;
@@ -160,7 +160,7 @@ class StringAnalyser implements StringAnalyserContract
     protected function extractBlockDefinition($blockDefinition)
     {
         try {
-            if ( ! $this->sourceContainsBlockDefinition($blockDefinition)) {
+            if (!$this->sourceContainsBlockDefinition($blockDefinition)) {
                 return [];
             }
         } catch (InvalidBlockDefinition $e) {
@@ -177,9 +177,7 @@ class StringAnalyser implements StringAnalyserContract
         );
 
         if (false === $hasMatches) {
-            throw new BlockDefinitionExtractionError(
-                'Unable to extract block definition "'. $blockDefinition .'"'
-            );
+            throw new BlockDefinitionExtractionError($blockDefinition);
         }
 
         return array_map(function ($set) use ($blockDefinition) {

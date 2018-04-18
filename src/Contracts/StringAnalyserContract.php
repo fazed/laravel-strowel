@@ -27,6 +27,7 @@ interface StringAnalyserContract
      *
      * @param  bool $fresh
      * @return string
+     * @throws BlockDefinitionExtractionError
      */
     public function getCleanString($fresh = false);
 
