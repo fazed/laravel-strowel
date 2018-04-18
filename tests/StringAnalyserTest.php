@@ -6,7 +6,7 @@ use Fazed\TorrentTitleParser\Contracts\StringAnalyserContract;
 
 class StringAnalyserTest extends TestCase
 {
-    const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6]==test==.mkv';
     const STRING_WITHOUT_BLOCKS = 'Shokugeki no Souma S3 - 11.mkv';
     const STRING_WITH_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
     const STRING_WITH_INDISTINCT_BLOCKS = '[FFF][FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
@@ -28,10 +28,10 @@ class StringAnalyserTest extends TestCase
             ->setSourceString(static::STRING_WITH_BLOCKS)
             ->getBlocks();
 
-        $this->assertCount(3, $blocks);
+        $this->assertCount(4, $blocks);
 
         $this->assertArraySubset(
-            ['FFF', '1080p', 'BE0D72E6'],
+            ['FFF', '1080p', 'BE0D72E6', 'test'],
             array_map(function ($block) {
                 return $block->getData();
             }, $blocks)
@@ -73,10 +73,10 @@ class StringAnalyserTest extends TestCase
         $analyser = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITH_UNBALANCED_BLOCKS);
 
-        $this->assertCount(3, $analyser->getDistinctBlocks());
+        $this->assertCount(4, $analyser->getDistinctBlocks());
 
         $this->assertArraySubset(
-            ['FFF', '1080p', 'BE0D72E6'],
+            ['FFF', '1080p', 'BE0D72E6', 'test'],
             array_map(function ($block) {
                 return $block->getData();
             }, $analyser->getBlocks())

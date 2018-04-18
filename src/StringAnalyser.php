@@ -129,16 +129,14 @@ class StringAnalyser implements StringAnalyserContract
      * Check whether the string contains
      * the given block definition.
      *
-     * @param  string $blockDefinition
+     * @param  string[] $blockDefinition
      * @return bool
      * @throws InvalidBlockDefinition
      * @throws BlockDefinitionUnbalanced
      */
     protected function sourceContainsBlockDefinition($blockDefinition)
     {
-        if (\strlen($blockDefinition) !== 2) {
-            throw new InvalidBlockDefinition($blockDefinition);
-        }
+        $this->validateBlockDefinitionDelimiters($blockDefinition);
 
         $blockStartDefinitionCount = substr_count($this->sourceString, $blockDefinition[0]);
         $blockCloseDefinitionCount = substr_count($this->sourceString, $blockDefinition[1]);
@@ -153,16 +151,21 @@ class StringAnalyser implements StringAnalyserContract
     /**
      * Extract the data of the block definition.
      *
-     * @param  string $blockDefinition
+     * @param  string[] $blockDefinition
      * @return BlockContract[]
      * @throws BlockDefinitionExtractionError
      */
     protected function extractBlockDefinition($blockDefinition)
     {
         try {
-            if (!$this->sourceContainsBlockDefinition($blockDefinition)) {
+            $this->validateBlockDefinitionDelimiters($blockDefinition);
+
+            if ( ! $this->sourceContainsBlockDefinition($blockDefinition)) {
                 return [];
             }
+
+            $blockDefinitionStart = $this->prepareDefinitionDelimiter($blockDefinition[0]);
+            $blockDefinitionEnd = $this->prepareDefinitionDelimiter($blockDefinition[1]);
         } catch (InvalidBlockDefinition $e) {
             return [];
         } catch (BlockDefinitionUnbalanced $e) {
@@ -170,7 +173,7 @@ class StringAnalyser implements StringAnalyserContract
         }
 
         $hasMatches = preg_match_all(
-            '/\\' . $blockDefinition[0] . '(.+?)\\' . $blockDefinition[1] .'/sui',
+            "/\\{$blockDefinitionStart}(.+?)\\{$blockDefinitionEnd}/sui",
             $this->sourceString,
             $blockData,
             PREG_SET_ORDER
@@ -213,5 +216,61 @@ class StringAnalyser implements StringAnalyserContract
         }
 
         return $this->cleanStringCache = trim($string);
+    }
+
+    /**
+     * Prepare regex parts for the given definition delimiters.
+     *
+     * @param  string $delimiter
+     * @return string
+     * @throws InvalidBlockDefinition
+     */
+    protected function prepareDefinitionDelimiter($delimiter)
+    {
+        if (($delimiterLength = \strlen($delimiter)) === 1) {
+            return $delimiter;
+        }
+
+        $this->validateBlockDefinitionDelimiter($delimiter);
+
+        return "{$delimiter[0]}{{$delimiterLength}}";
+    }
+
+    /**
+     * Validate the given block definition delimiters.
+     *
+     * @param  string[] $definition
+     * @return void
+     * @throws InvalidBlockDefinition
+     */
+    protected function validateBlockDefinitionDelimiters($definition)
+    {
+        if (\count($definition) !== 2) {
+            throw new InvalidBlockDefinition($definition);
+        }
+
+        foreach ($definition as $delimiter) {
+            $this->validateBlockDefinitionDelimiter($delimiter);
+        }
+    }
+
+    /**
+     * Validate a single block definition delimiter.
+     *
+     * @param  string $delimiter
+     * @return void
+     * @throws InvalidBlockDefinition
+     */
+    protected function validateBlockDefinitionDelimiter($delimiter)
+    {
+        if (($delimiterLength = \strlen($delimiter)) === 1) {
+            return;
+        }
+
+        for ($i = 0, $iMax = $delimiterLength; $i < $iMax; $i++) {
+            if ($i > 0 && $delimiter[$i] !== $delimiter[$delimiterLength - 1]) {
+                throw new InvalidBlockDefinition('Block definition should contain identical characters.');
+            }
+        }
     }
 }

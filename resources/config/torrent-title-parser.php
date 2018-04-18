@@ -11,13 +11,16 @@ return [
     | divided into separate blocks of the give title.
     |
     | Example using default definitions:
-    | Input:  [Block def] Torrent title (v2) [quality] {provider}
-    | Output: ['Block def', 'v2', 'quality', 'provider']
+    | Input:  [Block def] Torrent title (v2) [quality] {provider} ==group==
+    | Output: ['Block def', 'v2', 'quality', 'provider', group]
     |
     */
 
     'block_definitions' => [
-        '[]', '()', '{}',
+        ['[', ']'],
+        ['(', ')'],
+        ['{', '}'],
+        ['==', '=='],
     ],
 
     /*
