@@ -3,12 +3,12 @@
 namespace Fazed\TorrentTitleParser;
 
 use Fazed\TorrentTitleParser\Contracts\BlockContract;
-use Fazed\TorrentTitleParser\Contracts\BlockFactoryContract;
+use Fazed\TorrentTitleParser\Contracts\ParserResultContract;
 use Fazed\TorrentTitleParser\Contracts\StringAnalyserContract;
 use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDefinition;
+use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDelimiter;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Fazed\TorrentTitleParser\Exceptions\BlockDefinitionUnbalanced;
-use Fazed\TorrentTitleParser\Exceptions\BlockDefinitionExtractionError;
 
 class StringAnalyser implements StringAnalyserContract
 {
@@ -25,12 +25,12 @@ class StringAnalyser implements StringAnalyserContract
     private $configRepository;
 
     /**
-     * @var BlockFactoryContract
+     * @var array
      */
-    private $blockFactory;
+    private $blockDefinitions;
 
     /**
-     * @var null|BlockContract[]
+     * @var null|string[]
      */
     private $blockCache;
 
@@ -40,18 +40,31 @@ class StringAnalyser implements StringAnalyserContract
     private $cleanStringCache;
 
     /**
+     * @var null|ParserResultContract
+     */
+    private $parserResultCache;
+
+    /**
      * StringAnalyser constructor.
      *
      * @param ConfigRepository $configRepository
-     * @param BlockFactoryContract $blockFactory
      */
-    public function __construct(
-        ConfigRepository $configRepository,
-        BlockFactoryContract $blockFactory
-    )
+    public function __construct(ConfigRepository $configRepository)
     {
         $this->configRepository = $configRepository;
-        $this->blockFactory = $blockFactory;
+
+        $this->blockDefinitions = array_filter(
+            (array) $this->configRepository->get('torrent-title-parser.block_definitions', []),
+            function ($definitionSet) {
+                try {
+                    $this->validateBlockDefinitionDelimiters($definitionSet);
+                } catch (\Exception $e) {
+                    return false;
+                }
+
+                return true;
+            }
+        );
     }
 
     /**
@@ -78,7 +91,11 @@ class StringAnalyser implements StringAnalyserContract
     public function getCleanString($fresh = false)
     {
         if ($fresh || ( ! $fresh && null === $this->cleanStringCache)) {
-            return $this->deblockSourceString();
+            if (null === $this->parserResultCache) {
+                $this->getBlocks();
+            }
+
+            return $this->cleanStringCache = $this->parserResultCache->getCleanSource();
         }
 
         return $this->cleanStringCache;
@@ -90,7 +107,7 @@ class StringAnalyser implements StringAnalyserContract
     public function getBlocks($fresh = false)
     {
         if ($fresh || ( ! $fresh && null === $this->blockCache)) {
-            return $this->extractBlocks();
+            return $this->blockCache = $this->extractBlocks($this->sourceString);
         }
 
         return $this->blockCache;
@@ -107,133 +124,17 @@ class StringAnalyser implements StringAnalyserContract
     /**
      * Analyse string and extract block data.
      *
+     * @param  string $string
      * @return BlockContract[]
-     * @throws BlockDefinitionExtractionError
      */
-    protected function extractBlocks()
+    protected function extractBlocks($string)
     {
-        $registeredBlockDefinitions = (array) $this->configRepository->get(
-            'torrent-title-parser.block_definitions', []
-        );
+        /** @var \Fazed\TorrentTitleParser\Contracts\BlockParserContract $parser */
+        $parser = app('Fazed\TorrentTitleParser\Contracts\BlockParserContract');
 
-        foreach ($registeredBlockDefinitions as $blockDefinition) {
-            foreach ($this->extractBlockDefinition($blockDefinition) as $block) {
-                $blockStack[] = $block;
-            }
-        }
+        $this->parserResultCache = $parser->parse($string, $this->blockDefinitions);
 
-        return $this->blockCache = $blockStack ?? [];
-    }
-
-    /**
-     * Check whether the string contains
-     * the given block definition.
-     *
-     * @param  string[] $blockDefinition
-     * @return bool
-     * @throws InvalidBlockDefinition
-     * @throws BlockDefinitionUnbalanced
-     */
-    protected function sourceContainsBlockDefinition($blockDefinition)
-    {
-        $this->validateBlockDefinitionDelimiters($blockDefinition);
-
-        $blockStartDefinitionCount = substr_count($this->sourceString, $blockDefinition[0]);
-        $blockCloseDefinitionCount = substr_count($this->sourceString, $blockDefinition[1]);
-
-        if ($blockStartDefinitionCount !== $blockCloseDefinitionCount) {
-            throw new BlockDefinitionUnbalanced($blockDefinition);
-        }
-
-        return $blockStartDefinitionCount + $blockCloseDefinitionCount >= 2;
-    }
-
-    /**
-     * Extract the data of the block definition.
-     *
-     * @param  string[] $blockDefinition
-     * @return BlockContract[]
-     * @throws BlockDefinitionExtractionError
-     */
-    protected function extractBlockDefinition($blockDefinition)
-    {
-        try {
-            $this->validateBlockDefinitionDelimiters($blockDefinition);
-
-            if ( ! $this->sourceContainsBlockDefinition($blockDefinition)) {
-                return [];
-            }
-
-            $blockDefinitionStart = $this->prepareDefinitionDelimiter($blockDefinition[0]);
-            $blockDefinitionEnd = $this->prepareDefinitionDelimiter($blockDefinition[1]);
-        } catch (InvalidBlockDefinition $e) {
-            return [];
-        } catch (BlockDefinitionUnbalanced $e) {
-            return [];
-        }
-
-        $hasMatches = preg_match_all(
-            "/\\{$blockDefinitionStart}(.+?)\\{$blockDefinitionEnd}/sui",
-            $this->sourceString,
-            $blockData,
-            PREG_SET_ORDER
-        );
-
-        if (false === $hasMatches) {
-            throw new BlockDefinitionExtractionError($blockDefinition);
-        }
-
-        return array_map(function ($set) use ($blockDefinition) {
-            return $this->blockFactory->make($set[1], $blockDefinition);
-        }, $blockData);
-    }
-
-    /**
-     * Strip the blocks from the source string.
-     *
-     * @return string
-     * @throws BlockDefinitionExtractionError
-     */
-    protected function deblockSourceString()
-    {
-        $string = $this->sourceString;
-        $blocks = $this->getBlocks();
-
-        foreach ($blocks as $block) {
-            $blockData =  $block->getRawBlock();
-            $blockStart = \strpos($string, $block->getRawBlock());
-            $blockEnd = $blockStart + \strlen($block->getRawBlock());
-
-            if ($blockStart > 0 && ctype_space($string[$blockStart - 1])) {
-                $blockData = ' ' . $blockData;
-            }
-
-            if ($blockEnd < \strlen($string) && ctype_space($string[$blockEnd])) {
-                $blockData .= ' ';
-            }
-
-            $string = str_replace($blockData, '', $string);
-        }
-
-        return $this->cleanStringCache = trim($string);
-    }
-
-    /**
-     * Prepare regex parts for the given definition delimiters.
-     *
-     * @param  string $delimiter
-     * @return string
-     * @throws InvalidBlockDefinition
-     */
-    protected function prepareDefinitionDelimiter($delimiter)
-    {
-        if (($delimiterLength = \strlen($delimiter)) === 1) {
-            return $delimiter;
-        }
-
-        $this->validateBlockDefinitionDelimiter($delimiter);
-
-        return "{$delimiter[0]}{{$delimiterLength}}";
+        return $this->parserResultCache->getBlockData();
     }
 
     /**
@@ -241,6 +142,7 @@ class StringAnalyser implements StringAnalyserContract
      *
      * @param  string[] $definition
      * @return void
+     * @throws InvalidBlockDelimiter
      * @throws InvalidBlockDefinition
      */
     protected function validateBlockDefinitionDelimiters($definition)
@@ -259,18 +161,26 @@ class StringAnalyser implements StringAnalyserContract
      *
      * @param  string $delimiter
      * @return void
-     * @throws InvalidBlockDefinition
+     * @throws InvalidBlockDelimiter
      */
     protected function validateBlockDefinitionDelimiter($delimiter)
     {
-        if (($delimiterLength = \strlen($delimiter)) === 1) {
-            return;
+        if (\strlen($delimiter) !== 1) {
+            throw new InvalidBlockDelimiter('Block delimiter can only consist of 1 character.');
         }
+    }
 
-        for ($i = 0, $iMax = $delimiterLength; $i < $iMax; $i++) {
-            if ($i > 0 && $delimiter[$i] !== $delimiter[$delimiterLength - 1]) {
-                throw new InvalidBlockDefinition('Block definition should contain identical characters.');
-            }
+    /**
+     * Validate whether the block(s) contained in the string are balanced.
+     *
+     * @param  string $source
+     * @param  string[] $blockDefinition
+     * @throws BlockDefinitionUnbalanced
+     */
+    protected function validateBlockBalance($source, $blockDefinition)
+    {
+        if (substr_count($source, $blockDefinition[0]) !== substr_count($source, $blockDefinition[1])) {
+            throw new BlockDefinitionUnbalanced($blockDefinition);
         }
     }
 }

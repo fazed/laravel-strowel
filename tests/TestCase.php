@@ -20,7 +20,7 @@ abstract class TestCase extends Orchestra
      */
     protected function getEnvironmentSetUp($app)
     {
-        $app['config']->set('torrent-title-parser.block_definitions', [['[', ']'], ['(', ')'], ['{', '}'], ['==', '==']]);
+        $app['config']->set('torrent-title-parser.block_definitions', [['(', ')'], ['[', ']'], ['{', '}']]);
         $app['config']->set('torrent-title-parser.real_title_regex', null);
     }
 

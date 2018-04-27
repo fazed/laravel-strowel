@@ -26,8 +26,8 @@ class TorrentTitleParserProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(
-            'Fazed\TorrentTitleParser\Contracts\BlockFactoryContract',
-            'Fazed\TorrentTitleParser\Factories\BlockFactory'
+            'Fazed\TorrentTitleParser\Contracts\BlockParserResultFactoryContract',
+            'Fazed\TorrentTitleParser\Factories\BlockParserResultFactory'
         );
 
         $this->app->bind(
@@ -36,8 +36,13 @@ class TorrentTitleParserProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            'Fazed\TorrentTitleParser\Contracts\BlockContract',
-            'Fazed\TorrentTitleParser\Models\Block'
+            'Fazed\TorrentTitleParser\Contracts\BlockParserContract',
+            'Fazed\TorrentTitleParser\Parsers\BlockParser'
+        );
+
+        $this->app->bind(
+            'Fazed\TorrentTitleParser\Contracts\BlockParserResultContract',
+            'Fazed\TorrentTitleParser\Parsers\BlockParserResult'
         );
     }
 }

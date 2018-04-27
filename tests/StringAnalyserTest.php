@@ -6,10 +6,21 @@ use Fazed\TorrentTitleParser\Contracts\StringAnalyserContract;
 
 class StringAnalyserTest extends TestCase
 {
-    const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6]==test==.mkv';
-    const STRING_WITHOUT_BLOCKS = 'Shokugeki no Souma S3 - 11.mkv';
+    const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    const STRING_WITHOUT_BLOCKS = 'Shokugeki no Souma S3 - 11 .mkv';
     const STRING_WITH_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
     const STRING_WITH_INDISTINCT_BLOCKS = '[FFF][FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    const STRING_WITH_RECURSIVE_BLOCKS = '(Recursive (test(test2)) [FFF {1}]) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+
+    /** @test */
+    public function it_can_analyse_string_w_recursive_blocks()
+    {
+        $blocks = app(StringAnalyserContract::class)
+            ->setSourceString(static::STRING_WITH_RECURSIVE_BLOCKS)
+            ->getBlocks();
+
+        $this->assertCount(7, $blocks);
+    }
 
     /** @test */
     public function it_can_analyse_string_wo_blocks()
@@ -28,13 +39,11 @@ class StringAnalyserTest extends TestCase
             ->setSourceString(static::STRING_WITH_BLOCKS)
             ->getBlocks();
 
-        $this->assertCount(4, $blocks);
+        $this->assertCount(3, $blocks);
 
         $this->assertArraySubset(
-            ['FFF', '1080p', 'BE0D72E6', 'test'],
-            array_map(function ($block) {
-                return $block->getData();
-            }, $blocks)
+            ['FFF', '1080p', 'BE0D72E6'],
+            $blocks
         );
     }
 
@@ -55,16 +64,9 @@ class StringAnalyserTest extends TestCase
         $analyser = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITH_UNBALANCED_BLOCKS);
 
-        $this->assertCount(0, $analyser->getBlocks());
+        $this->assertCount(2, $analyser->getBlocks());
 
-        $this->assertArraySubset(
-            [],
-            array_map(function ($block) {
-                return $block->getData();
-            }, $analyser->getBlocks())
-        );
-
-        $this->assertSame(static::STRING_WITH_UNBALANCED_BLOCKS, $analyser->getCleanString());
+        $this->assertArraySubset(['1080p', 'BE0D72E6'], $analyser->getBlocks());
     }
 
     public function it_can_filter_distinct_blocks()
@@ -77,9 +79,7 @@ class StringAnalyserTest extends TestCase
 
         $this->assertArraySubset(
             ['FFF', '1080p', 'BE0D72E6', 'test'],
-            array_map(function ($block) {
-                return $block->getData();
-            }, $analyser->getBlocks())
+            $analyser->getBlocks()
         );
 
         $this->assertSame(static::STRING_WITHOUT_BLOCKS, $analyser->getCleanString());

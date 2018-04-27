@@ -11,8 +11,11 @@ return [
     | divided into separate blocks of the give title.
     |
     | Example using default definitions:
-    | Input:  [Block def] Torrent title (v2) [quality] {provider} ==group==
-    | Output: ['Block def', 'v2', 'quality', 'provider', group]
+    | Input:  [Block def] Torrent title (v2) [quality] {provider}
+    | Output: ['Block def', 'v2', 'quality', 'provider']
+    |
+    | WARNING:
+    | The current version only supports single character delimiters.
     |
     */
 
@@ -20,24 +23,6 @@ return [
         ['[', ']'],
         ['(', ')'],
         ['{', '}'],
-        ['==', '=='],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Real Title Regex
-    |--------------------------------------------------------------------------
-    |
-    | The regex will be used to determine the actual content
-    | the interpreter will be looking for. This is also
-    | to ensure the correct data is excluded from the
-    | block definition parsing (declared above).
-    |
-    | When no regex is provided, the parser will return
-    | the torrent title excluding block definitions.
-    |
-    */
-
-    'real_title_regex' => null,
 
 ];
