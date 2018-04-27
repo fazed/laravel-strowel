@@ -65,8 +65,9 @@ class BlockParser implements BlockParserContract
             $this->pushCharToStack($source[$i]);
 
             if (\in_array($source[$i], $endDelimiters) && $this->getCurrentDelimiterSet()[1] === $source[$i]) {
-                $this->popCurrentStack();
-                $this->decrementStackDepth($source[$i]);
+                $this->popCurrentStack()
+                    ->popCurrentDelimiterStack()
+                    ->decrementStackDepth();
             }
         }
 
@@ -138,6 +139,18 @@ class BlockParser implements BlockParserContract
     }
 
     /**
+     * Remove the last item from the delimiter stack.
+     *
+     * @return $this
+     */
+    protected function popCurrentDelimiterStack()
+    {
+        array_pop($this->delimiterStack);
+
+        return $this;
+    }
+
+    /**
      * Move the stack depth down one step.
      *
      * @param  string $delimiter
@@ -155,14 +168,11 @@ class BlockParser implements BlockParserContract
     /**
      * Move the stack depth up one step.
      *
-     * @param  string $delimiter
      * @return $this
      */
-    protected function decrementStackDepth($delimiter)
+    protected function decrementStackDepth()
     {
         --$this->currentStackDepth;
-
-        $this->delimiterStack[$this->currentStackDepth] = $this->getDelimiterSetByEndDelimiter($delimiter);
 
         return $this->initializeStackDepth();
     }
@@ -190,21 +200,6 @@ class BlockParser implements BlockParserContract
     protected function getDelimiterSetByStartDelimiter($character)
     {
         if (false !== ($idx = array_search($character, array_column($this->blockDefinitions, 0)))) {
-            return $this->blockDefinitions[$idx];
-        }
-
-        return '';
-    }
-
-    /**
-     * Get the delimiter stack containing the given end character.
-     *
-     * @param  string $character
-     * @return string
-     */
-    protected function getDelimiterSetByEndDelimiter($character)
-    {
-        if (false !== ($idx = array_search($character, array_column($this->blockDefinitions, 1)))) {
             return $this->blockDefinitions[$idx];
         }
 
