@@ -35,7 +35,7 @@ interface StringAnalyserContract
      * Get the blocks analysed from the string.
      *
      * @param  bool $fresh
-     * @return BlockContract[]
+     * @return string[]
      * @throws BlockDefinitionExtractionError
      */
     public function getBlocks($fresh = false);
@@ -43,7 +43,7 @@ interface StringAnalyserContract
     /**
      * Get all distinct blocks from the string.
      *
-     * @return BlockContract[]
+     * @return string[]
      * @throws BlockDefinitionExtractionError
      */
     public function getDistinctBlocks();
