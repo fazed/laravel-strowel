@@ -59,7 +59,8 @@ class BlockParser implements BlockParserContract
 
         for ($i = 0, $iMax = \strlen($source); $i < $iMax; $i++) {
             if (\in_array($source[$i], $startDelimiters)) {
-                $this->incrementStackDepth($source[$i]);
+                $this->incrementStackDepth()
+                    ->setActiveDelimiterSet($source[$i]);
             }
 
             $this->pushCharToStack($source[$i]);
@@ -94,6 +95,19 @@ class BlockParser implements BlockParserContract
         if (null !== $this->currentStackDepth) {
             $this->bufferStack[$this->currentStackDepth] .= $character;
         }
+
+        return $this;
+    }
+
+    /**
+     * Set the active delimiter set by the given (start) delimiter.
+     *
+     * @param  string $delimiter
+     * @return $this
+     */
+    protected function setActiveDelimiterSet($delimiter)
+    {
+        $this->delimiterStack[$this->currentStackDepth] = $this->getDelimiterSetByStartDelimiter($delimiter);
 
         return $this;
     }
@@ -153,14 +167,11 @@ class BlockParser implements BlockParserContract
     /**
      * Move the stack depth down one step.
      *
-     * @param  string $delimiter
      * @return $this
      */
-    protected function incrementStackDepth($delimiter)
+    protected function incrementStackDepth()
     {
         ++$this->currentStackDepth;
-
-        $this->delimiterStack[$this->currentStackDepth] = $this->getDelimiterSetByStartDelimiter($delimiter);
 
         return $this->initializeStackDepth();
     }
