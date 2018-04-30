@@ -14,7 +14,7 @@ class TorrentTitleParserProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../resources/config/torrent-title-parser.php',
+            __DIR__ . '/../resources/config/torrent-title-parser.php' => config_path('torrent-title-parser.php'),
         ], 'config');
     }
 
