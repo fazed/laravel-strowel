@@ -1,8 +1,8 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Test;
+namespace Fazed\Strowel\Test;
 
-use Fazed\TorrentTitleParser\Contracts\StringAnalyserContract;
+use Fazed\Strowel\Contracts\StringAnalyserContract;
 
 class StringAnalyserTest extends TestCase
 {

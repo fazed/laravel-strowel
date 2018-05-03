@@ -1,13 +1,13 @@
 <?php
 
-namespace Fazed\TorrentTitleParser;
+namespace Fazed\Strowel;
 
-use Fazed\TorrentTitleParser\Contracts\BlockParserContract;
-use Fazed\TorrentTitleParser\Contracts\ParserResultContract;
-use Fazed\TorrentTitleParser\Contracts\StringAnalyserContract;
-use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDelimiter;
-use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDefinition;
-use Fazed\TorrentTitleParser\Exceptions\BlockDefinitionUnbalanced;
+use Fazed\Strowel\Contracts\BlockParserContract;
+use Fazed\Strowel\Contracts\ParserResultContract;
+use Fazed\Strowel\Contracts\StringAnalyserContract;
+use Fazed\Strowel\Exceptions\InvalidBlockDelimiter;
+use Fazed\Strowel\Exceptions\InvalidBlockDefinition;
+use Fazed\Strowel\Exceptions\BlockDefinitionUnbalanced;
 
 class StringAnalyser implements StringAnalyserContract
 {
@@ -52,7 +52,7 @@ class StringAnalyser implements StringAnalyserContract
     public function __construct()
     {
         $this->blockDefinitions = array_filter(
-            config('torrent-title-parser.block_definitions', []), function ($definitionSet) {
+            config('strowel.block_definitions', []), function ($definitionSet) {
                 try { $this->validateBlockDefinitionDelimiters($definitionSet); return true; }
                 catch (\Exception $e) { return false; }
             }

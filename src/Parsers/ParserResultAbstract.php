@@ -1,8 +1,8 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Parsers;
+namespace Fazed\Strowel\Parsers;
 
-use Fazed\TorrentTitleParser\Contracts\ParserResultContract;
+use Fazed\Strowel\Contracts\ParserResultContract;
 
 abstract class ParserResultAbstract implements ParserResultContract
 {

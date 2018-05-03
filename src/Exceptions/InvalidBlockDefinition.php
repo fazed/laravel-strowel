@@ -1,6 +1,6 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Exceptions;
+namespace Fazed\Strowel\Exceptions;
 
 class InvalidBlockDefinition extends ExceptionAbstract
 {

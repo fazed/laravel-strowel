@@ -1,9 +1,9 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Test;
+namespace Fazed\Strowel\Test;
 
 use Orchestra\Testbench\TestCase as Orchestra;
-use Fazed\TorrentTitleParser\TorrentTitleParserProvider;
+use Fazed\Strowel\StrowelServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
@@ -20,8 +20,7 @@ abstract class TestCase extends Orchestra
      */
     protected function getEnvironmentSetUp($app)
     {
-        $app['config']->set('torrent-title-parser.block_definitions', [['(', ')'], ['[', ']'], ['{', '}']]);
-        $app['config']->set('torrent-title-parser.real_title_regex', null);
+        $app['config']->set('strowel.block_definitions', [['(', ')'], ['[', ']'], ['{', '}']]);
     }
 
     /**
@@ -29,6 +28,6 @@ abstract class TestCase extends Orchestra
      */
     protected function getPackageProviders($app)
     {
-        return [TorrentTitleParserProvider::class];
+        return [StrowelServiceProvider::class];
     }
 }

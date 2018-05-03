@@ -1,6 +1,6 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Parsers;
+namespace Fazed\Strowel\Parsers;
 
 class BlockParserResult extends ParserResultAbstract
 {

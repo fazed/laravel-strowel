@@ -23,12 +23,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Fazed\\TorrentTitleParser\\": "src"
+      "Fazed\\Strowel\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Fazed\\TorrentTitleParser\\Test\\": "tests"
+      "Fazed\\Strowel\\Test\\": "tests"
     }
   },
   "scripts": {
@@ -37,7 +37,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Fazed\\TorrentTitleParser\\TorrentTitleParserProvider"
+        "Fazed\\Strowel\\TorrentTitleParserProvider"
       ]
     }
   },

@@ -1,9 +1,9 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Parsers;
+namespace Fazed\Strowel\Parsers;
 
-use Fazed\TorrentTitleParser\Contracts\BlockParserContract;
-use Fazed\TorrentTitleParser\Contracts\BlockParserResultFactoryContract;
+use Fazed\Strowel\Contracts\BlockParserContract;
+use Fazed\Strowel\Contracts\BlockParserResultFactoryContract;
 
 class BlockParser implements BlockParserContract
 {

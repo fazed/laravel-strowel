@@ -1,8 +1,8 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Contracts;
+namespace Fazed\Strowel\Contracts;
 
-use Fazed\TorrentTitleParser\Exceptions\BlockDefinitionExtractionError;
+use Fazed\Strowel\Exceptions\BlockDefinitionExtractionError;
 
 interface StringAnalyserContract
 {

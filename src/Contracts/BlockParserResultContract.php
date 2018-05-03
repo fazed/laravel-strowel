@@ -1,6 +1,6 @@
 <?php
 
-namespace Fazed\TorrentTitleParser\Contracts;
+namespace Fazed\Strowel\Contracts;
 
 interface BlockParserResultContract
 {
