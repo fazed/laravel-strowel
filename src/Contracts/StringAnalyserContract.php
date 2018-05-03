@@ -39,12 +39,4 @@ interface StringAnalyserContract
      * @throws BlockDefinitionExtractionError
      */
     public function getBlocks($fresh = false);
-
-    /**
-     * Get all distinct blocks from the string.
-     *
-     * @return string[]
-     * @throws BlockDefinitionExtractionError
-     */
-    public function getDistinctBlocks();
 }

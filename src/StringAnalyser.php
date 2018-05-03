@@ -2,12 +2,11 @@
 
 namespace Fazed\TorrentTitleParser;
 
-use Fazed\TorrentTitleParser\Contracts\BlockContract;
+use Fazed\TorrentTitleParser\Contracts\BlockParserContract;
 use Fazed\TorrentTitleParser\Contracts\ParserResultContract;
 use Fazed\TorrentTitleParser\Contracts\StringAnalyserContract;
-use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDefinition;
 use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDelimiter;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Fazed\TorrentTitleParser\Exceptions\InvalidBlockDefinition;
 use Fazed\TorrentTitleParser\Exceptions\BlockDefinitionUnbalanced;
 
 class StringAnalyser implements StringAnalyserContract
@@ -18,11 +17,6 @@ class StringAnalyser implements StringAnalyserContract
      * @var string
      */
     private $sourceString;
-
-    /**
-     * @var ConfigRepository
-     */
-    private $configRepository;
 
     /**
      * @var array
@@ -46,23 +40,13 @@ class StringAnalyser implements StringAnalyserContract
 
     /**
      * StringAnalyser constructor.
-     *
-     * @param ConfigRepository $configRepository
      */
-    public function __construct(ConfigRepository $configRepository)
+    public function __construct()
     {
-        $this->configRepository = $configRepository;
-
         $this->blockDefinitions = array_filter(
-            (array) $this->configRepository->get('torrent-title-parser.block_definitions', []),
-            function ($definitionSet) {
-                try {
-                    $this->validateBlockDefinitionDelimiters($definitionSet);
-                } catch (\Exception $e) {
-                    return false;
-                }
-
-                return true;
+            config('torrent-title-parser.block_definitions', []), function ($definitionSet) {
+                try { $this->validateBlockDefinitionDelimiters($definitionSet); return true; }
+                catch (\Exception $e) { return false; }
             }
         );
     }
@@ -114,25 +98,15 @@ class StringAnalyser implements StringAnalyserContract
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getDistinctBlocks()
-    {
-        return array_unique($this->getBlocks());
-    }
-
-    /**
      * Analyse string and extract block data.
      *
      * @param  string $string
-     * @return BlockContract[]
+     * @return string[]
      */
     protected function extractBlocks($string)
     {
-        /** @var \Fazed\TorrentTitleParser\Contracts\BlockParserContract $parser */
-        $parser = app('Fazed\TorrentTitleParser\Contracts\BlockParserContract');
-
-        $this->parserResultCache = $parser->parse($string, $this->blockDefinitions);
+        $this->parserResultCache = app(BlockParserContract::class)
+            ->parse($string, $this->blockDefinitions);
 
         return $this->parserResultCache->getBlockData();
     }

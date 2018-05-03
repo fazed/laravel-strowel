@@ -72,6 +72,8 @@ class BlockParser implements BlockParserContract
             }
         }
 
+        $this->blockStack = array_unique($this->blockStack);
+
         return $this->parserResultFactory->make(
             $source,
             array_map(function ($block) {
