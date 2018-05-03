@@ -19,21 +19,29 @@ class StringAnalyser implements StringAnalyserContract
     private $sourceString;
 
     /**
+     * A list of block definitions incl. delimiters.
+     *
      * @var array
      */
     private $blockDefinitions;
 
     /**
+     * A list of previously found blocks on the instance.
+     *
      * @var null|string[]
      */
     private $blockCache;
 
     /**
+     * A representation of the source string without blocks.
+     *
      * @var null|string
      */
     private $cleanStringCache;
 
     /**
+     * The previously parser result on the instance.
+     *
      * @var null|ParserResultContract
      */
     private $parserResultCache;
