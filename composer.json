@@ -1,8 +1,8 @@
 {
-  "name": "fazed/laravel-torrent-title-parser",
-  "description": "Small package dividing torrent names into blocks, written for Laravel 5.5 and up.",
-  "keywords": ["torrent", "title", "parser", "laravel"],
-  "homepage": "https://github.com/fazed",
+  "name": "fazed/laravel-strowel",
+  "description": "Small package dividing string into blocks using specified delimiters, written for Laravel 5.5 and up.",
+  "keywords": ["string", "block", "parser", "laravel", "delimiters", "dividing", "parsing", "delimiting", "analysing", "analyser"],
+  "homepage": "https://github.com/fazed/laravel-strowel",
   "license": "MIT",
   "authors": [
     {
