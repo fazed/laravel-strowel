@@ -15,7 +15,7 @@ class BlockParser implements BlockParserContract
     /**
      * @var string[]
      */
-    protected $bufferStack = [];
+    protected $bufferStack = [0 => ''];
 
     /**
      * @var string[]
@@ -25,7 +25,7 @@ class BlockParser implements BlockParserContract
     /**
      * @var null|int
      */
-    protected $currentStackDepth;
+    protected $currentStackDepth = 0;
 
     /**
      * @var BlockParserResultFactoryContract
@@ -94,9 +94,7 @@ class BlockParser implements BlockParserContract
      */
     protected function pushCharToStack($character)
     {
-        if (null !== $this->currentStackDepth) {
-            $this->bufferStack[$this->currentStackDepth] .= $character;
-        }
+        $this->bufferStack[$this->currentStackDepth] .= $character;
 
         return $this;
     }
@@ -121,10 +119,6 @@ class BlockParser implements BlockParserContract
      */
     protected function getCurrentStack()
     {
-        if (null === $this->currentStackDepth) {
-            return null;
-        }
-
         return $this->bufferStack[$this->currentStackDepth];
     }
 
@@ -135,10 +129,6 @@ class BlockParser implements BlockParserContract
      */
     protected function getCurrentDelimiterSet()
     {
-        if (null === $this->currentStackDepth) {
-            return null;
-        }
-
         return $this->delimiterStack[$this->currentStackDepth];
     }
 
