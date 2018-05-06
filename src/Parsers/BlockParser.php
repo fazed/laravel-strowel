@@ -82,7 +82,7 @@ class BlockParser implements BlockParserContract
             array_map(function ($block) {
                 return $block[0] . trim(substr($block, 1, -1)) . $block[\strlen($block) - 1];
             }, $this->blockStack),
-            trim($this->bufferStack[0] ?? '')
+            trim(\count($this->blockStack) ? $this->bufferStack[0] ?? '' : $source)
         );
     }
 
