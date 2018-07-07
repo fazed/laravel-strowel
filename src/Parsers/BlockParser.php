@@ -4,6 +4,7 @@ namespace Fazed\Strowel\Parsers;
 
 use Fazed\Strowel\Contracts\BlockParserContract;
 use Fazed\Strowel\Contracts\BlockParserResultFactoryContract;
+use Fazed\Strowel\Contracts\ParserResultContract;
 
 class BlockParser implements BlockParserContract
 {
@@ -58,14 +59,17 @@ class BlockParser implements BlockParserContract
         $endDelimiters = array_column($blockDefinitions, 1);
 
         for ($i = 0, $iMax = \strlen($source); $i < $iMax; $i++) {
-            if (\in_array($source[$i], $startDelimiters)) {
+            if (\in_array($source[$i], $startDelimiters, false)) {
                 $this->incrementStackDepth()
                     ->setActiveDelimiterSet($source[$i]);
             }
 
             $this->pushCharToStack($source[$i]);
 
-            if (\in_array($source[$i], $endDelimiters) && $this->getCurrentDelimiterSet()[1] === $source[$i]) {
+            if (\in_array($source[$i], $endDelimiters, false)
+                && null !== $this->getCurrentDelimiterSet()
+                && $this->getCurrentDelimiterSet()[1] === $source[$i]
+            ) {
                 $this->popCurrentStack()
                     ->popCurrentDelimiterStack()
                     ->decrementStackDepth();
@@ -74,16 +78,7 @@ class BlockParser implements BlockParserContract
 
         $this->blockStack = array_unique($this->blockStack);
 
-        return $this->parserResultFactory->make(
-            $source,
-            array_map(function ($block) {
-                return trim(substr($block, 1, -1));
-            }, $this->blockStack),
-            array_map(function ($block) {
-                return $block[0] . trim(substr($block, 1, -1)) . $block[\strlen($block) - 1];
-            }, $this->blockStack),
-            trim(\count($this->blockStack) ? $this->bufferStack[0] ?? '' : $source)
-        );
+        return $this->makeResultInstance($source);
     }
 
     /**
@@ -119,7 +114,7 @@ class BlockParser implements BlockParserContract
      */
     protected function getCurrentStack()
     {
-        return $this->bufferStack[$this->currentStackDepth];
+        return $this->bufferStack[$this->currentStackDepth] ?? null;
     }
 
     /**
@@ -129,7 +124,7 @@ class BlockParser implements BlockParserContract
      */
     protected function getCurrentDelimiterSet()
     {
-        return $this->delimiterStack[$this->currentStackDepth];
+        return $this->delimiterStack[$this->currentStackDepth] ?? null;
     }
 
     /**
@@ -202,10 +197,35 @@ class BlockParser implements BlockParserContract
      */
     protected function getDelimiterSetByStartDelimiter($character)
     {
-        if (false !== ($idx = array_search($character, array_column($this->blockDefinitions, 0)))) {
+        if (false !== ($idx = array_search($character, array_column($this->blockDefinitions, 0), false))) {
             return $this->blockDefinitions[$idx];
         }
 
         return '';
+    }
+
+    /**
+     * Create a new parse result instance.
+     *
+     * @param  string $sourceString
+     * @return ParserResultContract
+     */
+    protected function makeResultInstance($sourceString)
+    {
+        $rawBlockData = array_values(
+            array_map(function ($block) {
+                return $block[0] . trim(substr($block, 1, -1)) . $block[\strlen($block) - 1];
+            }, $this->blockStack)
+        );
+
+        $blockData = array_values(
+            array_map(function ($block) {
+                return trim(substr($block, 1, -1));
+            }, $this->blockStack)
+        );
+
+        $cleanString = trim(\count($this->blockStack) ? $this->bufferStack[0] ?? '' : $sourceString);
+
+        return $this->parserResultFactory->make($sourceString, $blockData, $rawBlockData, $cleanString);
     }
 }

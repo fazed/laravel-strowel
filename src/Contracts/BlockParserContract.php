@@ -9,7 +9,7 @@ interface BlockParserContract
      *
      * @param  string $source
      * @param  string[] $blockDefinition
-     * @return BlockParserResultFactoryContract
+     * @return ParserResultContract
      */
     public function parse($source, array $blockDefinition);
 }

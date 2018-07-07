@@ -11,6 +11,7 @@ class StringAnalyserTest extends TestCase
     const STRING_WITH_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
     const STRING_WITH_INDISTINCT_BLOCKS = '[FFF][FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
     const STRING_WITH_RECURSIVE_BLOCKS = '(Recursive (test(test2)) [FFF {1}]) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    const STRING_WITH_CLOSING_DELIMITER_ON_START = ')[some block][block] test string [test](.zip';
 
     /** @test */
     public function it_can_analyse_string_w_recursive_blocks()
@@ -69,19 +70,33 @@ class StringAnalyserTest extends TestCase
         $this->assertArraySubset(['1080p', 'BE0D72E6'], $analyser->getBlocks());
     }
 
+    /** @test */
     public function it_can_filter_distinct_blocks()
     {
         /** @var StringAnalyserContract $analyser */
         $analyser = app(StringAnalyserContract::class)
-            ->setSourceString(static::STRING_WITH_UNBALANCED_BLOCKS);
-
-        $this->assertCount(4, $analyser->getDistinctBlocks());
+            ->setSourceString(static::STRING_WITH_INDISTINCT_BLOCKS);
 
         $this->assertArraySubset(
-            ['FFF', '1080p', 'BE0D72E6', 'test'],
+            ['FFF', '1080p', 'BE0D72E6'],
             $analyser->getBlocks()
         );
 
         $this->assertSame(static::STRING_WITHOUT_BLOCKS, $analyser->getCleanString());
+    }
+
+    /** @test */
+    public function it_can_ignore_closing_delimiter_on_start()
+    {
+        /** @var StringAnalyserContract $analyser */
+        $analyser = app(StringAnalyserContract::class)
+            ->setSourceString(static::STRING_WITH_CLOSING_DELIMITER_ON_START);
+
+        $this->assertArraySubset(
+            ['some block', 'block', 'test'],
+            $analyser->getBlocks()
+        );
+
+        $this->assertSame(') test string', $analyser->getCleanString());
     }
 }
