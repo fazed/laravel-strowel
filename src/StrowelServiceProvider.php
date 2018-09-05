@@ -7,6 +7,11 @@ use Illuminate\Support\ServiceProvider;
 class StrowelServiceProvider extends ServiceProvider
 {
     /**
+     * {@inheritdoc}
+     */
+    protected $defer = true;
+
+    /**
      * Perform post-registration booting of services.
      *
      * @return void
@@ -44,5 +49,18 @@ class StrowelServiceProvider extends ServiceProvider
             'Fazed\Strowel\Contracts\BlockParserResultContract',
             'Fazed\Strowel\Parsers\BlockParserResult'
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function provides()
+    {
+        return [
+            'Fazed\Strowel\Contracts\BlockParserContract',
+            'Fazed\Strowel\Contracts\StringAnalyserContract',
+            'Fazed\Strowel\Contracts\BlockParserResultContract',
+            'Fazed\Strowel\Contracts\BlockParserResultFactoryContract',
+        ];
     }
 }
