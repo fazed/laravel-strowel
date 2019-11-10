@@ -2,15 +2,11 @@
 
 namespace Fazed\Strowel;
 
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class StrowelServiceProvider extends ServiceProvider
+class StrowelServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected $defer = true;
-
     /**
      * Perform post-registration booting of services.
      *
@@ -24,30 +20,28 @@ class StrowelServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register bindings in the container.
-     *
-     * @return void
+     * {@inheritDoc}
      */
     public function register()
     {
         $this->app->singleton(
-            'Fazed\Strowel\Contracts\BlockParserResultFactoryContract',
-            'Fazed\Strowel\Factories\BlockParserResultFactory'
+            \Fazed\Strowel\Contracts\BlockParserResultFactoryContract::class,
+            \Fazed\Strowel\Factories\BlockParserResultFactory::class
         );
 
         $this->app->bind(
-            'Fazed\Strowel\Contracts\StringAnalyserContract',
-            'Fazed\Strowel\StringAnalyser'
+            \Fazed\Strowel\Contracts\StringAnalyserContract::class,
+            \Fazed\Strowel\StringAnalyser::class
         );
 
         $this->app->bind(
-            'Fazed\Strowel\Contracts\BlockParserContract',
-            'Fazed\Strowel\Parsers\BlockParser'
+            \Fazed\Strowel\Contracts\BlockParserContract::class,
+            \Fazed\Strowel\Parsers\BlockParser::class
         );
 
         $this->app->bind(
-            'Fazed\Strowel\Contracts\BlockParserResultContract',
-            'Fazed\Strowel\Parsers\BlockParserResult'
+            \Fazed\Strowel\Contracts\BlockParserResultContract::class,
+            \Fazed\Strowel\Parsers\BlockParserResult::class
         );
     }
 
@@ -57,10 +51,10 @@ class StrowelServiceProvider extends ServiceProvider
     public function provides()
     {
         return [
-            'Fazed\Strowel\Contracts\BlockParserContract',
-            'Fazed\Strowel\Contracts\StringAnalyserContract',
-            'Fazed\Strowel\Contracts\BlockParserResultContract',
-            'Fazed\Strowel\Contracts\BlockParserResultFactoryContract',
+            \Fazed\Strowel\Contracts\BlockParserContract::class,
+            \Fazed\Strowel\Contracts\StringAnalyserContract::class,
+            \Fazed\Strowel\Contracts\BlockParserResultContract::class,
+            \Fazed\Strowel\Contracts\BlockParserResultFactoryContract::class,
         ];
     }
 }

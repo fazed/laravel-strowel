@@ -34,7 +34,12 @@ abstract class ParserResultAbstract implements ParserResultContract
      * @param string[] $rawBlockData
      * @param string   $cleanSource
      */
-    protected function __construct($source, array $blockData, array $rawBlockData, $cleanSource)
+    protected function __construct(
+        string $source,
+        array $blockData,
+        array $rawBlockData,
+        string $cleanSource
+    )
     {
         $this->source = $source;
         $this->blockData = $blockData;
@@ -45,7 +50,7 @@ abstract class ParserResultAbstract implements ParserResultContract
     /**
      * {@inheritdoc}
      */
-    public function getSource()
+    public function getSource(): string
     {
         return $this->source;
     }
@@ -53,16 +58,17 @@ abstract class ParserResultAbstract implements ParserResultContract
     /**
      * {@inheritdoc}
      */
-    public function setSource($source)
+    public function setSource(string $source): ParserResultContract
     {
         $this->source = $source;
+
         return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getBlockData()
+    public function getBlockData(): array
     {
         return $this->blockData;
     }
@@ -70,7 +76,7 @@ abstract class ParserResultAbstract implements ParserResultContract
     /**
      * {@inheritdoc}
      */
-    public function setBlockData(array $blockData)
+    public function setBlockData(array $blockData): ParserResultContract
     {
         $this->blockData = $blockData;
 
@@ -80,7 +86,7 @@ abstract class ParserResultAbstract implements ParserResultContract
     /**
      * {@inheritdoc}
      */
-    public function getRawBlockData()
+    public function getRawBlockData(): array
     {
         return $this->rawBlockData;
     }
@@ -88,7 +94,7 @@ abstract class ParserResultAbstract implements ParserResultContract
     /**
      * {@inheritdoc}
      */
-    public function setRawBlockData(array $rawBlockData)
+    public function setRawBlockData(array $rawBlockData): ParserResultContract
     {
         $this->rawBlockData = $rawBlockData;
 
@@ -98,7 +104,7 @@ abstract class ParserResultAbstract implements ParserResultContract
     /**
      * {@inheritdoc}
      */
-    public function getCleanSource()
+    public function getCleanSource(): string
     {
         return $this->cleanSource;
     }
@@ -106,7 +112,7 @@ abstract class ParserResultAbstract implements ParserResultContract
     /**
      * {@inheritdoc}
      */
-    public function setCleanSource($cleanSource)
+    public function setCleanSource(string $cleanSource): ParserResultContract
     {
         $this->cleanSource = $cleanSource;
 

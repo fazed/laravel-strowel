@@ -2,19 +2,22 @@
 
 namespace Fazed\Strowel\Test;
 
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Fazed\Strowel\Contracts\StringAnalyserContract;
 
-class StringAnalyserTest extends TestCase
+final class StringAnalyserTest extends TestCase
 {
-    const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
-    const STRING_WITHOUT_BLOCKS = 'Shokugeki no Souma S3 - 11 .mkv';
-    const STRING_WITH_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
-    const STRING_WITH_INDISTINCT_BLOCKS = '[FFF][FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
-    const STRING_WITH_RECURSIVE_BLOCKS = '(Recursive (test(test2)) [FFF {1}]) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
-    const STRING_WITH_CLOSING_DELIMITER_ON_START = ')[some block][block] test string [test](.zip';
+    use ArraySubsetAsserts;
+
+    private const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    private const STRING_WITHOUT_BLOCKS = 'Shokugeki no Souma S3 - 11 .mkv';
+    private const STRING_WITH_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    private const STRING_WITH_INDISTINCT_BLOCKS = '[FFF][FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    private const STRING_WITH_RECURSIVE_BLOCKS = '(Recursive (test(test2)) [FFF {1}]) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    private const STRING_WITH_CLOSING_DELIMITER_ON_START = ')[some block][block] test string [test](.zip';
 
     /** @test */
-    public function it_can_analyse_string_w_recursive_blocks()
+    public function it_can_analyse_string_w_recursive_blocks(): void
     {
         $blocks = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITH_RECURSIVE_BLOCKS)
@@ -24,7 +27,7 @@ class StringAnalyserTest extends TestCase
     }
 
     /** @test */
-    public function it_can_analyse_string_wo_blocks()
+    public function it_can_analyse_string_wo_blocks(): void
     {
         $blocks = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITHOUT_BLOCKS)
@@ -34,7 +37,7 @@ class StringAnalyserTest extends TestCase
     }
 
     /** @test */
-    public function it_can_analyse_string_w_blocks()
+    public function it_can_analyse_string_w_blocks(): void
     {
         $blocks = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITH_BLOCKS)
@@ -42,14 +45,14 @@ class StringAnalyserTest extends TestCase
 
         $this->assertCount(3, $blocks);
 
-        $this->assertArraySubset(
+        self::assertArraySubset(
             ['FFF', '1080p', 'BE0D72E6'],
             $blocks
         );
     }
 
     /** @test */
-    public function it_can_clean_source_string()
+    public function it_can_clean_source_string(): void
     {
         $cleanString = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITH_BLOCKS)
@@ -59,7 +62,7 @@ class StringAnalyserTest extends TestCase
     }
 
     /** @test */
-    public function it_can_ignore_unbalanced_blocks()
+    public function it_can_ignore_unbalanced_blocks(): void
     {
         /** @var StringAnalyserContract $analyser */
         $analyser = app(StringAnalyserContract::class)
@@ -67,17 +70,17 @@ class StringAnalyserTest extends TestCase
 
         $this->assertCount(2, $analyser->getBlocks());
 
-        $this->assertArraySubset(['1080p', 'BE0D72E6'], $analyser->getBlocks());
+        self::assertArraySubset(['1080p', 'BE0D72E6'], $analyser->getBlocks());
     }
 
     /** @test */
-    public function it_can_filter_distinct_blocks()
+    public function it_can_filter_distinct_blocks(): void
     {
         /** @var StringAnalyserContract $analyser */
         $analyser = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITH_INDISTINCT_BLOCKS);
 
-        $this->assertArraySubset(
+        self::assertArraySubset(
             ['FFF', '1080p', 'BE0D72E6'],
             $analyser->getBlocks()
         );
@@ -86,13 +89,13 @@ class StringAnalyserTest extends TestCase
     }
 
     /** @test */
-    public function it_can_ignore_closing_delimiter_on_start()
+    public function it_can_ignore_closing_delimiter_on_start(): void
     {
         /** @var StringAnalyserContract $analyser */
         $analyser = app(StringAnalyserContract::class)
             ->setSourceString(static::STRING_WITH_CLOSING_DELIMITER_ON_START);
 
-        $this->assertArraySubset(
+        self::assertArraySubset(
             ['some block', 'block', 'test'],
             $analyser->getBlocks()
         );

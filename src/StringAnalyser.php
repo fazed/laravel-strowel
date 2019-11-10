@@ -5,12 +5,19 @@ namespace Fazed\Strowel;
 use Fazed\Strowel\Contracts\BlockParserContract;
 use Fazed\Strowel\Contracts\ParserResultContract;
 use Fazed\Strowel\Contracts\StringAnalyserContract;
-use Fazed\Strowel\Exceptions\InvalidBlockDelimiter;
-use Fazed\Strowel\Exceptions\InvalidBlockDefinition;
 use Fazed\Strowel\Exceptions\BlockDefinitionUnbalanced;
+use Fazed\Strowel\Exceptions\InvalidBlockDefinition;
+use Fazed\Strowel\Exceptions\InvalidBlockDelimiter;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\Facades\Config;
 
 class StringAnalyser implements StringAnalyserContract
 {
+    /**
+     * @var Container
+     */
+    private $container;
+
     /**
      * The base string which will gets analysed.
      *
@@ -48,11 +55,15 @@ class StringAnalyser implements StringAnalyserContract
 
     /**
      * StringAnalyser constructor.
+     *
+     * @param Container $container
      */
-    public function __construct()
+    public function __construct(Container $container)
     {
+        $this->container = $container;
+
         $this->blockDefinitions = array_filter(
-            config('strowel.block_definitions', []), function ($definitionSet) {
+            Config::get('strowel.block_definitions', []), function ($definitionSet) {
                 try { $this->validateBlockDefinitionDelimiters($definitionSet); return true; }
                 catch (\Exception $e) { return false; }
             }
@@ -62,7 +73,7 @@ class StringAnalyser implements StringAnalyserContract
     /**
      * {@inheritdoc}
      */
-    public function getSourceString()
+    public function getSourceString(): string
     {
         return $this->sourceString;
     }
@@ -70,7 +81,7 @@ class StringAnalyser implements StringAnalyserContract
     /**
      * {@inheritdoc}
      */
-    public function setSourceString($sourceString)
+    public function setSourceString(string $sourceString): StringAnalyserContract
     {
         $this->sourceString = trim($sourceString);
 
@@ -80,7 +91,7 @@ class StringAnalyser implements StringAnalyserContract
     /**
      * {@inheritdoc}
      */
-    public function getCleanString($fresh = false)
+    public function getCleanString(bool $fresh = false): string
     {
         if ($fresh || ( ! $fresh && null === $this->cleanStringCache)) {
             if (null === $this->parserResultCache) {
@@ -96,7 +107,7 @@ class StringAnalyser implements StringAnalyserContract
     /**
      * {@inheritdoc}
      */
-    public function getBlocks($fresh = false)
+    public function getBlocks(bool $fresh = false): array
     {
         if ($fresh || ( ! $fresh && null === $this->blockCache)) {
             return $this->blockCache = $this->extractBlocks($this->sourceString);
@@ -111,10 +122,13 @@ class StringAnalyser implements StringAnalyserContract
      * @param  string $string
      * @return string[]
      */
-    protected function extractBlocks($string)
+    protected function extractBlocks(string $string): array
     {
-        $this->parserResultCache = app(BlockParserContract::class)
-            ->parse($string, $this->blockDefinitions);
+        $this->parserResultCache = $this->container->make(
+            BlockParserContract::class
+        )->parse(
+            $string, $this->blockDefinitions
+        );
 
         return $this->parserResultCache->getBlockData();
     }
@@ -127,7 +141,7 @@ class StringAnalyser implements StringAnalyserContract
      * @throws InvalidBlockDelimiter
      * @throws InvalidBlockDefinition
      */
-    protected function validateBlockDefinitionDelimiters($definition)
+    protected function validateBlockDefinitionDelimiters(array $definition): void
     {
         if (\count($definition) !== 2) {
             throw new InvalidBlockDefinition($definition);
@@ -145,7 +159,7 @@ class StringAnalyser implements StringAnalyserContract
      * @return void
      * @throws InvalidBlockDelimiter
      */
-    protected function validateBlockDefinitionDelimiter($delimiter)
+    protected function validateBlockDefinitionDelimiter(string $delimiter): void
     {
         if (\strlen($delimiter) !== 1) {
             throw new InvalidBlockDelimiter('Block delimiter can only consist of 1 character.');
@@ -157,9 +171,10 @@ class StringAnalyser implements StringAnalyserContract
      *
      * @param  string $source
      * @param  string[] $blockDefinition
+     * @return void
      * @throws BlockDefinitionUnbalanced
      */
-    protected function validateBlockBalance($source, $blockDefinition)
+    protected function validateBlockBalance(string $source, array $blockDefinition): void
     {
         if (substr_count($source, $blockDefinition[0]) !== substr_count($source, $blockDefinition[1])) {
             throw new BlockDefinitionUnbalanced($blockDefinition);

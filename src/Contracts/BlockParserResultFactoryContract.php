@@ -13,5 +13,10 @@ interface BlockParserResultFactoryContract
      * @param  string $cleanSource
      * @return ParserResultContract
      */
-    public function make($source, array $blockData, array $rawBlockData, $cleanSource);
+    public function make(
+        string $source,
+        array $blockData,
+        array $rawBlockData,
+        string $cleanSource
+    ): ParserResultContract;
 }

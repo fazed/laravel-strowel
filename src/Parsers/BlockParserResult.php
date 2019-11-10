@@ -12,7 +12,12 @@ class BlockParserResult extends ParserResultAbstract
      * @param string[] $rawBlockData
      * @param string   $cleanSource
      */
-    public function __construct($source, array $blockData, array $rawBlockData, $cleanSource)
+    public function __construct(
+        string $source,
+        array $blockData,
+        array $rawBlockData,
+        string $cleanSource
+    )
     {
         parent::__construct($source, $blockData, $rawBlockData, $cleanSource);
     }

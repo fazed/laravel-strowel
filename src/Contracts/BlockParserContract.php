@@ -11,5 +11,5 @@ interface BlockParserContract
      * @param  string[] $blockDefinition
      * @return ParserResultContract
      */
-    public function parse($source, array $blockDefinition);
+    public function parse(string $source, array $blockDefinition): ParserResultContract;
 }

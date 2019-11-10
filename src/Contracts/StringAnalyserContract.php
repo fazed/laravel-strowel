@@ -11,7 +11,7 @@ interface StringAnalyserContract
      *
      * @return string
      */
-    public function getSourceString();
+    public function getSourceString(): string;
 
     /**
      * Set a string as source.
@@ -19,7 +19,7 @@ interface StringAnalyserContract
      * @param  string $sourceString
      * @return $this
      */
-    public function setSourceString($sourceString);
+    public function setSourceString(string $sourceString): StringAnalyserContract;
 
     /**
      * Get the source string without block
@@ -29,7 +29,7 @@ interface StringAnalyserContract
      * @return string
      * @throws BlockDefinitionExtractionError
      */
-    public function getCleanString($fresh = false);
+    public function getCleanString(bool $fresh = false): string;
 
     /**
      * Get the blocks analysed from the string.
@@ -38,5 +38,5 @@ interface StringAnalyserContract
      * @return string[]
      * @throws BlockDefinitionExtractionError
      */
-    public function getBlocks($fresh = false);
+    public function getBlocks(bool $fresh = false): array;
 }

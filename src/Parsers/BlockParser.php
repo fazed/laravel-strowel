@@ -19,24 +19,24 @@ class BlockParser implements BlockParserContract
     protected $bufferStack = [0 => ''];
 
     /**
-     * @var string[]
-     */
-    protected $delimiterStack = [];
-
-    /**
      * @var null|int
      */
     protected $currentStackDepth = 0;
 
     /**
+     * @var array
+     */
+    protected $delimiterStack = [];
+
+    /**
+     * @var array
+     */
+    protected $blockDefinitions = [];
+
+    /**
      * @var BlockParserResultFactoryContract
      */
     private $parserResultFactory;
-
-    /**
-     * @var string[]
-     */
-    private $blockDefinitions;
 
     /**
      * BlockParser constructor.
@@ -51,7 +51,7 @@ class BlockParser implements BlockParserContract
     /**
      * {@inheritdoc}
      */
-    public function parse($source, array $blockDefinitions)
+    public function parse(string $source, array $blockDefinitions): ParserResultContract
     {
         $this->blockDefinitions = $blockDefinitions;
 
@@ -87,7 +87,7 @@ class BlockParser implements BlockParserContract
      * @param  string $character
      * @return $this
      */
-    protected function pushCharToStack($character)
+    protected function pushCharToStack(string $character): BlockParserContract
     {
         $this->bufferStack[$this->currentStackDepth] .= $character;
 
@@ -100,7 +100,7 @@ class BlockParser implements BlockParserContract
      * @param  string $delimiter
      * @return $this
      */
-    protected function setActiveDelimiterSet($delimiter)
+    protected function setActiveDelimiterSet(string $delimiter): BlockParserContract
     {
         $this->delimiterStack[$this->currentStackDepth] = $this->getDelimiterSetByStartDelimiter($delimiter);
 
@@ -112,7 +112,7 @@ class BlockParser implements BlockParserContract
      *
      * @return null|string
      */
-    protected function getCurrentStack()
+    protected function getCurrentStack(): ?string
     {
         return $this->bufferStack[$this->currentStackDepth] ?? null;
     }
@@ -120,9 +120,9 @@ class BlockParser implements BlockParserContract
     /**
      * Get the delimiter set which is currently active.
      *
-     * @return null|string
+     * @return null|string[]
      */
-    protected function getCurrentDelimiterSet()
+    protected function getCurrentDelimiterSet(): ?array
     {
         return $this->delimiterStack[$this->currentStackDepth] ?? null;
     }
@@ -132,7 +132,7 @@ class BlockParser implements BlockParserContract
      *
      * @return $this
      */
-    protected function popCurrentStack()
+    protected function popCurrentStack(): BlockParserContract
     {
         $this->blockStack[] = array_pop($this->bufferStack);
 
@@ -144,7 +144,7 @@ class BlockParser implements BlockParserContract
      *
      * @return $this
      */
-    protected function popCurrentDelimiterStack()
+    protected function popCurrentDelimiterStack(): BlockParserContract
     {
         array_pop($this->delimiterStack);
 
@@ -156,7 +156,7 @@ class BlockParser implements BlockParserContract
      *
      * @return $this
      */
-    protected function incrementStackDepth()
+    protected function incrementStackDepth(): BlockParserContract
     {
         ++$this->currentStackDepth;
 
@@ -168,7 +168,7 @@ class BlockParser implements BlockParserContract
      *
      * @return $this
      */
-    protected function decrementStackDepth()
+    protected function decrementStackDepth(): BlockParserContract
     {
         --$this->currentStackDepth;
 
@@ -180,7 +180,7 @@ class BlockParser implements BlockParserContract
      *
      * @return $this
      */
-    protected function initializeStackDepth()
+    protected function initializeStackDepth(): BlockParserContract
     {
         if ( ! array_key_exists($this->currentStackDepth, $this->bufferStack)) {
             $this->bufferStack[$this->currentStackDepth] = '';
@@ -193,15 +193,15 @@ class BlockParser implements BlockParserContract
      * Get the delimiter stack containing the given start character.
      *
      * @param  string $character
-     * @return string
+     * @return string[]
      */
-    protected function getDelimiterSetByStartDelimiter($character)
+    protected function getDelimiterSetByStartDelimiter(string $character): array
     {
         if (false !== ($idx = array_search($character, array_column($this->blockDefinitions, 0), false))) {
             return $this->blockDefinitions[$idx];
         }
 
-        return '';
+        return [];
     }
 
     /**
@@ -210,16 +210,16 @@ class BlockParser implements BlockParserContract
      * @param  string $sourceString
      * @return ParserResultContract
      */
-    protected function makeResultInstance($sourceString)
+    protected function makeResultInstance(string $sourceString): ParserResultContract
     {
         $rawBlockData = array_values(
-            array_map(function ($block) {
+            array_map(static function ($block) {
                 return $block[0] . trim(substr($block, 1, -1)) . $block[\strlen($block) - 1];
             }, $this->blockStack)
         );
 
         $blockData = array_values(
-            array_map(function ($block) {
+            array_map(static function ($block) {
                 return trim(substr($block, 1, -1));
             }, $this->blockStack)
         );
