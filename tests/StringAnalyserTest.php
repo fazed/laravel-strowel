@@ -9,11 +9,11 @@ final class StringAnalyserTest extends TestCase
 {
     use ArraySubsetAsserts;
 
-    private const STRING_WITH_BLOCKS = '[FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
-    private const STRING_WITHOUT_BLOCKS = 'Shokugeki no Souma S3 - 11 .mkv';
-    private const STRING_WITH_UNBALANCED_BLOCKS = '[FFF) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
-    private const STRING_WITH_INDISTINCT_BLOCKS = '[FFF][FFF] Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
-    private const STRING_WITH_RECURSIVE_BLOCKS = '(Recursive (test(test2)) [FFF {1}]) Shokugeki no Souma S3 - 11 [1080p][BE0D72E6].mkv';
+    private const STRING_WITH_BLOCKS = '[SUB] some random show - 01 [1080p][1234567].mkv';
+    private const STRING_WITHOUT_BLOCKS = 'some random show - 01 .mkv';
+    private const STRING_WITH_UNBALANCED_BLOCKS = '[SUB) some random show - 01 [1080p][1234567].mkv';
+    private const STRING_WITH_INDISTINCT_BLOCKS = '[SUB][SUB] some random show - 01 [1080p][1234567].mkv';
+    private const STRING_WITH_RECURSIVE_BLOCKS = '(Recursive (test(test2)) [SUB {1}]) some random show - 01 [1080p][1234567].mkv';
     private const STRING_WITH_CLOSING_DELIMITER_ON_START = ')[some block][block] test string [test](.zip';
 
     /** @test */
@@ -46,7 +46,7 @@ final class StringAnalyserTest extends TestCase
         $this->assertCount(3, $blocks);
 
         self::assertArraySubset(
-            ['FFF', '1080p', 'BE0D72E6'],
+            ['SUB', '1080p', '1234567'],
             $blocks
         );
     }
@@ -70,7 +70,7 @@ final class StringAnalyserTest extends TestCase
 
         $this->assertCount(2, $analyser->getBlocks());
 
-        self::assertArraySubset(['1080p', 'BE0D72E6'], $analyser->getBlocks());
+        self::assertArraySubset(['1080p', '1234567'], $analyser->getBlocks());
     }
 
     /** @test */
@@ -81,7 +81,7 @@ final class StringAnalyserTest extends TestCase
             ->setSourceString(static::STRING_WITH_INDISTINCT_BLOCKS);
 
         self::assertArraySubset(
-            ['FFF', '1080p', 'BE0D72E6'],
+            ['SUB', '1080p', '1234567'],
             $analyser->getBlocks()
         );
 
