@@ -5,25 +5,9 @@ namespace Fazed\Strowel\Factories;
 use Fazed\Strowel\Contracts\BlockParserResultContract;
 use Fazed\Strowel\Contracts\BlockParserResultFactoryContract;
 use Fazed\Strowel\Contracts\ParserResultContract;
-use Illuminate\Contracts\Container\Container;
 
 class BlockParserResultFactory implements BlockParserResultFactoryContract
 {
-    /**
-     * @var Container
-     */
-    private $container;
-
-    /**
-     * BlockParserResultFactory constructor.
-     *
-     * @param Container $container
-     */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -34,7 +18,7 @@ class BlockParserResultFactory implements BlockParserResultFactoryContract
         string $cleanSource
     ): ParserResultContract
     {
-        return $this->container->make(BlockParserResultContract::class, [
+        return app(BlockParserResultContract::class, [
             'source'       => $source,
             'blockData'    => $blockData,
             'rawBlockData' => $rawBlockData,

@@ -8,16 +8,10 @@ use Fazed\Strowel\Contracts\StringAnalyserContract;
 use Fazed\Strowel\Exceptions\BlockDefinitionUnbalanced;
 use Fazed\Strowel\Exceptions\InvalidBlockDefinition;
 use Fazed\Strowel\Exceptions\InvalidBlockDelimiter;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Config;
 
 class StringAnalyser implements StringAnalyserContract
 {
-    /**
-     * @var Container
-     */
-    private $container;
-
     /**
      * The base string which will gets analysed.
      *
@@ -55,13 +49,9 @@ class StringAnalyser implements StringAnalyserContract
 
     /**
      * StringAnalyser constructor.
-     *
-     * @param Container $container
      */
-    public function __construct(Container $container)
+    public function __construct()
     {
-        $this->container = $container;
-
         $this->blockDefinitions = array_filter(
             Config::get('strowel.block_definitions', []), function ($definitionSet) {
                 try { $this->validateBlockDefinitionDelimiters($definitionSet); return true; }
@@ -124,7 +114,7 @@ class StringAnalyser implements StringAnalyserContract
      */
     protected function extractBlocks(string $string): array
     {
-        $this->parserResultCache = $this->container->make(
+        $this->parserResultCache = app(
             BlockParserContract::class
         )->parse(
             $string, $this->blockDefinitions
